@@ -13,5 +13,62 @@
 			<button type="submit">Post</button>
 		</form>
 	</div>
+	<div class="mt-5">
+		{% for post in posts %}
+
+			<div>
+				<h5>{{post.user}}</h5>
+				<p><small>{{post.created}}</small></p>
+				<p>{{post.content|truncatewords:50}}</p>
+				<div>
+					<button class="like" data-id="{{post.pk}}">
+						<span class="like-count">{{post.likes.all.count}}</span>
+						<span class="action">
+							{% if request.user in post.likes.all %}
+								Liked
+							{% else %}
+								Like
+							{% endif %}
+						</span>
+					</button>
+				</div>
+				<a href="{% url 'post_detail' post.pk %}">Read More</a>
+				<hr>
+			</div>
+
+		{% endfor %}
+	</div>
 
 {% endblock content %}
+
+{% block domready %}
+
+	const like_btn = document.querySelector('button.like');
+	const like_count = document.querySelector('span.like-count');
+	const like_action = document.querySelector('span.action');
+
+	like_btn.addEventListener('click', function() {
+		fetch(`post/${this.dataset.id}/like/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+		        "X-Requested-With": "XMLHttpRequest",
+		        "HTTP_X_REQUESTED_WITH": "XMLHttpRequest",
+				'X-CSRFToken': '{{csrf_token}}',
+			}
+		})
+		.then(response => response.json())
+		.then((data)=>{
+			if (data.status == 'ok') {
+				if (data.action == 'Liked') {
+					like_count.textContent = parseInt(like_count.textContent) + 1
+					like_action.textContent = 'Liked'
+				} else if (data.action == 'Like') {
+					like_count.textContent = like_count.textContent - 1
+					like_action.textContent = 'Like'
+				}
+			}
+		});
+	});
+
+{% endblock domready %}
