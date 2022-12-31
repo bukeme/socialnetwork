@@ -23,4 +23,5 @@ urlpatterns = [
     path('accounts/', include('allauth.account.urls')),
     path('accounts/password/change', PasswordChangeView.as_view(success_url=reverse_lazy('home')), name='account_change_password'),
     path('', include('posts.urls')),
+    path('comment/', include('comments.urls')),
 ]
